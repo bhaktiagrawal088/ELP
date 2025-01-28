@@ -2,16 +2,16 @@ import express from "express";
 import { activateUser, getUserInfo, loginUser, logoutUser, registrationUser, socialAuth, updateAccessToken, updateProfilePicture, updateUserInfo, updateUserPassword } from "../controllers/user.controller";
 import { authorizeRoles, isAuthenticated } from "../middlerware/auth";
 
-const UserRouter = express.Router();
-UserRouter.post('/registration', registrationUser);
-UserRouter.post('/activate-user', activateUser);
-UserRouter.post('/login', loginUser);
-UserRouter.get('/logout', isAuthenticated,logoutUser);
-UserRouter.get('/refresh', updateAccessToken);
-UserRouter.get('/user',isAuthenticated, getUserInfo);
-UserRouter.post('/social-auth', socialAuth);
-UserRouter.put('/update-user-info', isAuthenticated, updateUserInfo);
-UserRouter.put('/update-user-password', isAuthenticated, updateUserPassword);
-UserRouter.put('/update-user-avatar', isAuthenticated, updateProfilePicture);
+const userRouter = express.Router();
+userRouter.post('/registration', registrationUser);
+userRouter.post('/activate-user', activateUser);
+userRouter.post('/login', loginUser);
+userRouter.get('/logout', isAuthenticated,logoutUser);
+userRouter.get('/refresh', updateAccessToken);
+userRouter.get('/user',isAuthenticated, getUserInfo);
+userRouter.post('/social-auth', socialAuth);
+userRouter.put('/update-user-info', isAuthenticated, updateUserInfo);
+userRouter.put('/update-user-password', isAuthenticated, updateUserPassword);
+userRouter.put('/update-user-avatar', isAuthenticated, updateProfilePicture);
 
-export default UserRouter;
+export default userRouter;
