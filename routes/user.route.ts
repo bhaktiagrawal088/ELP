@@ -1,6 +1,6 @@
 import express from "express";
 import { activateUser, getUserInfo, loginUser, logoutUser, registrationUser, socialAuth, updateAccessToken, updateProfilePicture, updateUserInfo, updateUserPassword } from "../controllers/user.controller";
-import { authorizeRoles, isAuthenticated } from "../middlerware/auth";
+import {  isAuthenticated } from "../middlerware/auth";
 
 const userRouter = express.Router();
 userRouter.post('/registration', registrationUser);
