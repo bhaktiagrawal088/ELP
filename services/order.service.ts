@@ -11,5 +11,14 @@ import orderModel from "../models/orderModel";
         success: true,
         order: order
     })
-
 })
+
+// get All order --- only for admin
+export const getAllOrdersService = async(res:Response) => {
+  const orders = await orderModel.find().sort({createAt: -1});
+
+  res.status(201).json({
+    success: true,
+    orders,
+  })
+}

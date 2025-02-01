@@ -8,7 +8,7 @@ import path from "path";
 import ejs from "ejs";
 import sendMail from "../utlis/sendMail";
 import NotificationModel from "../models/notificationModel";
-import { newOrder } from "../services/order.service";
+import { getAllOrdersService, newOrder } from "../services/order.service";
 import mongoose from "mongoose";
 
 
@@ -107,4 +107,14 @@ export const createOrder = CatchAsyncError(async(req:Request, res:Response,next 
     }
 
     
+});
+
+// get all order -- only for admin
+
+export const getAllOrders = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        getAllOrdersService(res);
+    } catch (error : any) {
+        return next(new ErrorHandler(error.message, 500));
+    }
 })
