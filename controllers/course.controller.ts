@@ -105,7 +105,7 @@ export const getSingleCourse = CatchAsyncError(async(req:Request, res:Response, 
 
         // console.log("Hitting moongodb");
 
-        await redis.set(courseId, JSON.stringify(course));
+        await redis.set(courseId, JSON.stringify(course), "EX", 604800); // After 7 days user login again to maintain our cache data
 
         res.status(201).json({
            success: true,

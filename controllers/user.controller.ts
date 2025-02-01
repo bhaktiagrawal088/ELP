@@ -202,7 +202,7 @@ export const updateAccessToken = CatchAsyncError(async(req:Request, res:Response
 
         const session = await redis.get(decode.id as string);
         if(!session){
-            return next(new ErrorHandler(message, 400));
+            return next(new ErrorHandler("Please login to access this resources ", 400));
         }
 
         const user = JSON.parse(session);
@@ -220,7 +220,7 @@ export const updateAccessToken = CatchAsyncError(async(req:Request, res:Response
         res.cookie("access_token", accessToken, accessTokenOptions);
         res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
-
+        await redis.set(user._id,JSON.stringify(user), "EX", 604800); // After 7days login again to maintence the cache 
         res.status(200).json({
             success : true,
             accessToken,
