@@ -221,10 +221,11 @@ export const updateAccessToken = CatchAsyncError(async(req:Request, res:Response
         res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
         await redis.set(user._id,JSON.stringify(user), "EX", 604800); // After 7days login again to maintence the cache 
-        res.status(200).json({
-            success : true,
-            accessToken,
-        })
+        // res.status(200).json({
+        //     success : true,
+        //     accessToken,
+        // })
+        next();
     } catch (error : any) {
         return next(new ErrorHandler(error.message, 400))
     }
