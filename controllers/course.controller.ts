@@ -123,36 +123,33 @@ export const getSingleCourse = CatchAsyncError(async(req:Request, res:Response, 
 export const getAllCourses = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
   try {
 
-    const isCacheExit = await redis.get("allCourses");
-    if(isCacheExit){
-      const courses = JSON.parse(isCacheExit);
-      // console.log("Hitting redis");
-      res.status(200).json({
-        success: true, 
-        courses,
-      })
-    }
+    // const isCacheExit = await redis.get("allCourses");
+    // if(isCacheExit){
+    //   const courses = JSON.parse(isCacheExit);
+    //   // console.log("Hitting redis");
+    //   res.status(200).json({
+    //     success: true, 
+    //     courses,
+    //   })
+    // }
 
-      else{
+    //   else{
         const courses = await CourseModel.find().select('-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links');
 
         // console.log("Hiiting moongodb");
 
-        await redis.set("allCourses", JSON.stringify(courses));
+        // await redis.set("allCourses", JSON.stringify(courses));
 
           res.status(200).json({
             success: true,
             courses,
           })
 
-      }
-    
-
-    
-  } catch (error : any) {
+      }catch (error : any) {
     return next(new ErrorHandler(error.message, 500));
   }
-});
+}
+)
 
 // get course content- onlt for valid user
 export const getCourseByUser = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
