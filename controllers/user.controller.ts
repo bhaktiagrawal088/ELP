@@ -24,6 +24,7 @@ interface IRegistrationBody{
 
 export const registrationUser = CatchAsyncError(async(req:Request, res: Response, next:NextFunction) => {
     try {
+        console.log("Backend received:", req.body); // ✅ ADD THIS
         const {name, email, password} = req.body ;
         const isEmailExit = await userModel.findOne({email});
         if(isEmailExit){
@@ -53,10 +54,12 @@ export const registrationUser = CatchAsyncError(async(req:Request, res: Response
                 activationToken: activationToken.token,
             })
         } catch (error : any) {
+              console.error("❌ sendMail failed:", error); // ADD THIS
             return next(new ErrorHandler(error.message, 400));
         }
 
     } catch (error : any) {
+        console.error("Mail sending error:", error); // ✅ ADD THIS
         return next(new ErrorHandler(error.message, 400))
         
     }

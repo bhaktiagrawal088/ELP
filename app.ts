@@ -4,7 +4,6 @@ export const app = express();
 import cors from 'cors';
 import cookieParser from "cookie-parser";
 import { ErrorMiddleware } from "./middlerware/error";
-import UserRouter from "./routes/user.route";
 import courseRouter from "./routes/course.route";
 import orderRouter from "./routes/order.route";
 import userRouter from "./routes/user.route";
