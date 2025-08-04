@@ -71,25 +71,79 @@ export const editLayout = CatchAsyncError(async(req:Request, res:Response, next:
         const {type} = req.body;
         
         if(type === 'Banner'){
+
+            
             const bannerData:any = await LayoutModel.findOne({type: "Banner"});
-            const {image, title, subTitle} = req.body;
-            if(bannerData){
-                await cloudinary.v2.uploader.destroy(bannerData?.image.public_id);   
+
+             if (!bannerData) {
+                return res.status(404).json({ success: false, message: "Banner not found" });
             }
-            const myCloud = await cloudinary.v2.uploader.upload(image,{
-                folder : "layout",
-            })
+            const {image, title, subTitle} = req.body;
+
+              let uploadedData;
+            if (!image.startsWith("https")) {
+                uploadedData = await cloudinary.v2.uploader.upload(image, {
+                 folder: "layout",
+            });
+            }
 
             const banner = {
-                image :{
-                    public_id : myCloud.public_id,
-                    url : myCloud.secure_url,
+                type: "Banner",
+                image: {
+                    public_id: image.startsWith("https")
+                        ? bannerData.banner?.image?.public_id
+                        : uploadedData?.public_id,
+
+                    url: image.startsWith("https")
+                        ? bannerData.banner?.image?.url
+                        : uploadedData?.secure_url,
                 },
                 title,
                 subTitle,
-            }
-            await LayoutModel.findByIdAndUpdate(bannerData._id,{banner});
+            };
+
+            await LayoutModel.findByIdAndUpdate(bannerData._id, { banner });
         }
+        //     const data  = image.startsWith("https")
+        //     ? bannerData
+        //     : await cloudinary.v2.uploader.upload(image,{
+        //         folder : "layout",
+        //    })
+
+        //    const banner = {
+        //     type : "Banner",
+        //     image : {
+        //         public_id : image.startsWith("https")
+        //         ? bannerData.banner.image.public_id
+        //         : data?.public_id,
+
+        //         url : image.startsWith("https")
+        //         ? bannerData.banner.image?.url
+        //         : data.secure_url,
+        //     },
+        //     title,
+        //     subTitle
+        //    }
+
+        //    await LayoutModel.findByIdAndUpdate(bannerData._id, {banner}); 
+        // }
+        //     if(bannerData){
+        //         await cloudinary.v2.uploader.destroy(bannerData?.image.public_id);   
+        //     }
+        //     const myCloud = await cloudinary.v2.uploader.upload(image,{
+        //         folder : "layout",
+        //     })
+
+        //     const banner = {
+        //         image :{
+        //             public_id : myCloud.public_id,
+        //             url : myCloud.secure_url,
+        //         },
+        //         title,
+        //         subTitle,
+        //     }
+        //     await LayoutModel.findByIdAndUpdate(bannerData._id,{banner});
+        // }
 
         if (type === "FAQ"){
             const {faq} = req.body;
@@ -131,7 +185,7 @@ export const editLayout = CatchAsyncError(async(req:Request, res:Response, next:
 
 export const getLayoutByType = CatchAsyncError(async(req:Request, res:Response, next: NextFunction) => {
     try {
-        const {type} = req.body;
+        const {type} = req.params;
         const layout =  await LayoutModel.findOne({type});
 
         res.status(201).json({
