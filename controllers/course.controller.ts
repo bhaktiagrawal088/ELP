@@ -20,17 +20,35 @@ export const uploadCourse = CatchAsyncError(
       const thumbnail = data.thumbnail;
 
       // Validate if thumbnail is a string (URL or base64)
-      if (thumbnail && typeof thumbnail !== "string") {
+      if (thumbnail && typeof thumbnail !== "string" && thumbnail.startsWith("data:")) {
         return next(
           new ErrorHandler("Thumbnail must be a valid string (URL or base64).", 400)
         );
       }
 
       // If thumbnail is an object (file), upload to Cloudinary
-      if (thumbnail && typeof thumbnail === "object" && thumbnail.path) {
-        const myCloudThumbnail = await cloudinary.v2.uploader.upload(thumbnail.path, {
-          folder: "courses",
-        });
+      // if (thumbnail && typeof thumbnail === "object" && thumbnail.path) {
+      //   const myCloudThumbnail = await cloudinary.v2.uploader.upload(thumbnail.path, {
+      //     folder: "courses",
+      //   });
+
+      // If thumbnail is base64 string, upload to Cloudinary
+if (thumbnail && typeof thumbnail.url === "string" && thumbnail.url.startsWith("data:")) {
+  const myCloudThumbnail = await cloudinary.v2.uploader.upload(thumbnail.url, {
+    folder: "courses",
+  });
+
+//   data.thumbnail = {
+//     public_id: myCloudThumbnail.public_id,
+//     url: myCloudThumbnail.secure_url,
+//   };
+// }
+
+// If it's already an object with url (from DB), just keep it
+
+
+
+        
 
         // Save Cloudinary URL and public_id
         data.thumbnail = {
@@ -38,6 +56,9 @@ export const uploadCourse = CatchAsyncError(
           url: myCloudThumbnail.secure_url,
         };
       }
+      else if (thumbnail && thumbnail.url) {
+  data.thumbnail = thumbnail;
+}
 
       // Pass data to service for creating course
       createCourse(data, res, next);
