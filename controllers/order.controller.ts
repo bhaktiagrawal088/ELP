@@ -92,7 +92,6 @@ export const createOrder = CatchAsyncError(async(req:Request, res:Response,next 
         // course.purchased ? course.purchased += 1 : course.purchased;
         await CourseModel.findByIdAndUpdate(courseId, { $inc: { purchased: 1 } }, { new: true });
 
-
         await course.save();
 
 
@@ -118,3 +117,13 @@ export const getAllOrders = CatchAsyncError(async(req:Request, res:Response, nex
         return next(new ErrorHandler(error.message, 500));
     }
 })
+
+
+// sent stripe publishie key
+export const sendStripePublishableKey = CatchAsyncError(
+  async (req: Request, res: Response) => {
+    res.status(200).json({
+      publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+    });
+  }
+); 
