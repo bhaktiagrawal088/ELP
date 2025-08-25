@@ -8,10 +8,11 @@ const courseRouter = express.Router();
 
 courseRouter.post('/create-course', updateAccessToken,isAuthenticated, authorizeRoles('admin'), uploadCourse);
 courseRouter.put('/edit-course/:id', updateAccessToken, isAuthenticated, authorizeRoles('admin'), editCourse);
+ 
 courseRouter.get('/get-course/:id', getSingleCourse);
 courseRouter.get('/get-courses', getAllCourses);
 
-courseRouter.get('/get-admin-courses',isAuthenticated, authorizeRoles('admin') , getAdminAllCourses);
+courseRouter.get('/get-admin-courses' ,isAuthenticated, authorizeRoles('admin') , getAdminAllCourses);
 
 courseRouter.get('/get-course-content/:id', updateAccessToken , isAuthenticated, getCourseByUser);
 courseRouter.put('/add-question', updateAccessToken, isAuthenticated,addQuestion);
