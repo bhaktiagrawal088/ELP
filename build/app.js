@@ -35,6 +35,7 @@ const limiter = (0, express_rate_limit_1.default)({
     legacyHeaders: false,
     ipv6Subnet: 56,
 });
+exports.app.use(limiter);
 //routes
 exports.app.use("/api/v1", user_route_1.default, course_route_1.default);
 exports.app.use("/api/v1", order_route_1.default, notification_route_1.default);
@@ -53,5 +54,4 @@ exports.app.all("*", (req, res, next) => {
     next(err);
 });
 // middleware calls
-exports.app.use(limiter);
 exports.app.use(error_1.ErrorMiddleware);

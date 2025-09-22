@@ -10,7 +10,7 @@ import userRouter from "./routes/user.route";
 import notificationRoute from "./routes/notification.route";
 import analayticsRouter from "./routes/analytics.route";
 import layoutRouter from "./routes/layout.route";
-import  rateLimit  from 'express-rate-limit'
+import rateLimit  from "express-rate-limit"
 
 
 //body parser
@@ -34,6 +34,9 @@ const limiter = rateLimit({
 	legacyHeaders: false, 
 	ipv6Subnet: 56, 
 })
+
+app.use(limiter)
+
 //routes
 app.use("/api/v1", userRouter, courseRouter);
 app.use("/api/v1", orderRouter, notificationRoute);
@@ -55,6 +58,5 @@ app.all("*",(req: Request, res:Response, next:NextFunction) => {
 })
 
 // middleware calls
-app.use(limiter)
 app.use(ErrorMiddleware);
 
