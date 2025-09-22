@@ -60,5 +60,5 @@ export const updateNotification = CatchAsyncError(async(req:Request, res:Respons
 cron.schedule("0 0 0 * * *",async() => { // call everyday at midnight
     const thirtyDaysAgo  = new Date(Date.now() - 30 * 24 * 60 * 60 * 100);
     await NotificationModel.deleteMany({status : "read", createAt : {$lt : thirtyDaysAgo}});
-    console.log('Delete read notification');
+    // console.log('Delete read notification');
 })

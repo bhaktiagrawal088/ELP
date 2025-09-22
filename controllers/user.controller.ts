@@ -24,7 +24,7 @@ interface IRegistrationBody{
 
 export const registrationUser = CatchAsyncError(async(req:Request, res: Response, next:NextFunction) => {
     try {
-        console.log("Backend received:", req.body); // ✅ ADD THIS
+        // console.log("Backend received:", req.body); // ✅ ADD THIS
         const {name, email, password} = req.body ;
         const isEmailExit = await userModel.findOne({email});
         if(isEmailExit){
@@ -171,7 +171,7 @@ export const logoutUser = CatchAsyncError(async(req:Request, res:Response, next:
     
         // Delete the Redis key
         const redisResponse = await redis.del(userId);
-        console.log("Redis deletion response:", redisResponse);
+        // console.log("Redis deletion response:", redisResponse);
     
         res.cookie("access_token", "", {
             maxAge: 1,

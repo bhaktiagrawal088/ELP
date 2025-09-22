@@ -21,8 +21,8 @@ const sendMail = async(options:EmailOptions):Promise<void> => {
             pass:process.env.SMTP_PASSWORD,
         }
     })
-    console.log("SMTP Mail:", process.env.SMTP_MAIL);
-console.log("SMTP Password:", process.env.SMTP_PASSWORD);
+    // console.log("SMTP Mail:", process.env.SMTP_MAIL);
+// console.log("SMTP Password:", process.env.SMTP_PASSWORD);
 
 
     const {email, subject, template, data} = options;
