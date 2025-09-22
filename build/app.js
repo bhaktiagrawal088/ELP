@@ -16,7 +16,7 @@ const user_route_1 = __importDefault(require("./routes/user.route"));
 const notification_route_1 = __importDefault(require("./routes/notification.route"));
 const analytics_route_1 = __importDefault(require("./routes/analytics.route"));
 const layout_route_1 = __importDefault(require("./routes/layout.route"));
-const express_rate_limit_1 = require("express-rate-limit");
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 //body parser
 exports.app.use(express_1.default.json({ limit: "50mb" }));
 // cookie parser
@@ -28,7 +28,7 @@ exports.app.use((0, cors_1.default)({
     credentials: true,
 }));
 // api request limit
-const limiter = (0, express_rate_limit_1.rateLimit)({
+const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
     limit: 100, // Limit each IP to 100 requests per `window` 
     standardHeaders: 'draft-8',
