@@ -31,9 +31,8 @@ exports.app.use((0, cors_1.default)({
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
     limit: 100, // Limit each IP to 100 requests per `window` 
-    standardHeaders: 'draft-8',
+    standardHeaders: true,
     legacyHeaders: false,
-    ipv6Subnet: 56,
 });
 exports.app.use(limiter);
 //routes
