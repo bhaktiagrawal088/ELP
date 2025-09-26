@@ -10,7 +10,7 @@ import userRouter from "./routes/user.route";
 import notificationRoute from "./routes/notification.route";
 import analayticsRouter from "./routes/analytics.route";
 import layoutRouter from "./routes/layout.route";
-import rateLimit  from "express-rate-limit"
+import rateLimit  from "express-rate-limit";
 
 
 //body parser
