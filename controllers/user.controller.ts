@@ -25,9 +25,9 @@ interface IRegistrationBody{
 export const registrationUser = CatchAsyncError(async(req:Request, res: Response, next:NextFunction) => {
     try {
         // console.log("Backend received:", req.body); // ✅ ADD THIS
-        const {name, email, password} = req.body ;
-        const isEmailExit = await userModel.findOne({email});
-        if(isEmailExit){
+        const {name, email, password} = req.body as IRegistrationBody ;
+        const isEmailExist = await userModel.findOne({email});
+        if(isEmailExist){
             return next(new ErrorHandler("Email already exist", 400));
         };
 
