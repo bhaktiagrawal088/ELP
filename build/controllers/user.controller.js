@@ -32,6 +32,12 @@ exports.registrationUser = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, re
         const activationCode = activationToken.activationCode;
         const data = { user: { name: user.name }, activationCode };
         const html = await ejs_1.default.renderFile(path_1.default.join(__dirname, "../mails/activation-mail.ejs"), data);
+        const sendMailWithTimeout = async (options, timeout = 8000) => {
+            return Promise.race([
+                (0, sendMail_1.default)(options),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Email sending timeout")), timeout)),
+            ]);
+        };
         try {
             await (0, sendMail_1.default)({
                 email: user.email,
