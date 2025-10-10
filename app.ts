@@ -22,7 +22,7 @@ app.use(cookieParser());
 //cors => cross origin  resource sharing
 app.use(cors({
     // origin: process.env.ORIGIN
-    origin : ['http://localhost:3000'],
+    origin : ['http://localhost:3000', 'https://elp-git-main-sakshis-projects-1a421a6a.vercel.app/'],
     credentials: true,
 }))
 
