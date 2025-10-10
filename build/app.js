@@ -17,16 +17,16 @@ const notification_route_1 = __importDefault(require("./routes/notification.rout
 const analytics_route_1 = __importDefault(require("./routes/analytics.route"));
 const layout_route_1 = __importDefault(require("./routes/layout.route"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
-//body parser
-exports.app.use(express_1.default.json({ limit: "50mb" }));
-// cookie parser
-exports.app.use((0, cookie_parser_1.default)());
 //cors => cross origin  resource sharing
 exports.app.use((0, cors_1.default)({
     // origin: process.env.ORIGIN
     origin: ['http://localhost:3000', 'https://elp-nu.vercel.app'],
     credentials: true,
 }));
+// cookie parser
+exports.app.use((0, cookie_parser_1.default)());
+//body parser
+exports.app.use(express_1.default.json({ limit: "50mb" }));
 // api request limit
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes

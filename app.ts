@@ -12,19 +12,19 @@ import analayticsRouter from "./routes/analytics.route";
 import layoutRouter from "./routes/layout.route";
 import rateLimit  from "express-rate-limit";
 
-
-//body parser
-app.use(express.json({limit: "50mb"}));
-
-// cookie parser
-app.use(cookieParser());
-
 //cors => cross origin  resource sharing
 app.use(cors({
     // origin: process.env.ORIGIN
     origin : ['http://localhost:3000', 'https://elp-nu.vercel.app'],
     credentials: true,
 }))
+// cookie parser
+app.use(cookieParser());
+
+//body parser
+app.use(express.json({limit: "50mb"}));
+
+
 
 // api request limit
 const limiter = rateLimit({
