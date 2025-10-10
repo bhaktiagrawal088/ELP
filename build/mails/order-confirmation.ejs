@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .header {
+            background-color: #4f5ef1;
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .message {
+            font-size: 16px;
+            margin: 20px 0;
+            color: #555;
+        }
+
+        .table-container {
+            width: 100%;
+            margin: auto;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f7f7f7;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        td {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding: 20px;
+            font-size: 14px;
+            color: #666;
+            background-color: #f9f9f9;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .footer a {
+            color: #4f5ef1;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Your ELearning Order is Confirmed! 🎉</h1>
+        </div>
+
+        <p class="message">Thank you for your purchase! Below are your order details:</p>
+
+        <div class="table-container">
+            <table>
+                <tr>
+                    <th>Order ID</th>
+                    <td><strong><%= order._id %></strong></td>
+                </tr>
+                <tr>
+                    <th>Course Name</th>
+                    <td><%= order.name %></td>
+                </tr>
+                <tr>
+                    <th>Order Date</th>
+                    <td><%= order.date %></td>
+                </tr>
+                <tr>
+                    <th>Price</th>
+                    <td><strong>$<%= order.price %></strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>If you have any questions, please contact our <a href="#">support team</a>.</p>
+            <p>&copy; 2025 ELearning. All rights reserved.</p>
+        </div>
+    </div>
+
+</body>
+</html>

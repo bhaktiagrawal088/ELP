@@ -5,6 +5,7 @@ import cloudinary from "cloudinary";
 import { createCourse, getAllCoursesService } from "../services/course.service";
 import CourseModel from "../models/course.model";
 import { redis } from "../utlis/redis";
+
 import mongoose from "mongoose";
 import ejs from "ejs";
 import path from "path";
