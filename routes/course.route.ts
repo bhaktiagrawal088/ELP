@@ -7,8 +7,7 @@ import { updateAccessToken } from "../controllers/user.controller";
 const courseRouter = express.Router();
 
 courseRouter.post('/create-course', updateAccessToken,isAuthenticated, authorizeRoles('admin'), uploadCourse);
-courseRouter.put('/edit-course/:id', updateAccessToken, isAuthenticated, authorizeRoles('admin'), 
-Course);
+courseRouter.put('/edit-course/:id', updateAccessToken, isAuthenticated, authorizeRoles('admin'), editCourse);
  
 courseRouter.get('/get-course/:id', getSingleCourse);
 courseRouter.get('/get-courses', getAllCourses);
