@@ -19,12 +19,12 @@ interface IRegistrationBody{
     name: string,
     email: string,
     password : string,
-    avatar? : string
+    // avatar? : string
 }
 
 export const registrationUser = CatchAsyncError(async(req:Request, res: Response, next:NextFunction) => {
     try {
-        // console.log("Backend received:", req.body); // ✅ ADD THIS
+        // console.log("Backend received:", req.body); 
         const {name, email, password} = req.body as IRegistrationBody ;
         const isEmailExist = await userModel.findOne({email});
         if(isEmailExist){

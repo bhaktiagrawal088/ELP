@@ -18,10 +18,10 @@ const user_service_1 = require("../services/user.service");
 const cloudinary_1 = __importDefault(require("cloudinary"));
 exports.registrationUser = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res, next) => {
     try {
-        // console.log("Backend received:", req.body); // ✅ ADD THIS
+        // console.log("Backend received:", req.body); 
         const { name, email, password } = req.body;
-        const isEmailExit = await user_model_1.default.findOne({ email });
-        if (isEmailExit) {
+        const isEmailExist = await user_model_1.default.findOne({ email });
+        if (isEmailExist) {
             return next(new ErrorHandler_1.default("Email already exist", 400));
         }
         ;
