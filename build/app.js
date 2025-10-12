@@ -20,7 +20,7 @@ const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 //cors => cross origin  resource sharing
 exports.app.use((0, cors_1.default)({
     // origin: process.env.ORIGIN
-    origin: ['http://localhost:3000', 'https://elp-nu.vercel.app'],
+    origin: ['http://localhost:3000', 'https://www.liveenglishwithsushil.com'],
     credentials: true,
 }));
 // cookie parser

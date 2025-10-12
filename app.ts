@@ -15,7 +15,7 @@ import rateLimit  from "express-rate-limit";
 //cors => cross origin  resource sharing
 app.use(cors({
     // origin: process.env.ORIGIN
-    origin : ['http://localhost:3000', 'https://elp-nu.vercel.app'],
+    origin : ['http://localhost:3000', 'https://www.liveenglishwithsushil.com'],
     credentials: true,
 }))
 // cookie parser
