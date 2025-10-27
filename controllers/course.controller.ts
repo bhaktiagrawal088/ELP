@@ -9,7 +9,7 @@ import { redis } from "../utlis/redis";
 import mongoose from "mongoose";
 import ejs from "ejs";
 import path from "path";
-import sendMail from "../utlis/sendMail";
+import {sendMail} from "../utlis/sendMail";
 import NotificationModel from "../models/notificationModel";
 import axios from "axios";
 
