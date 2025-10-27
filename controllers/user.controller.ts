@@ -7,7 +7,7 @@ import { CatchAsyncError } from "../middlerware/CashAsyncErrors";
 import jwt, { JwtPayload, Secret } from 'jsonwebtoken'
 import ejs from 'ejs';
 import path from "path";
-import sendMail from "../utlis/sendMail";
+import {sendMail} from "../utlis/sendMail"
 import { IUser } from "../models/user.model";
 import { accessTokenOptions, refreshTokenOptions, sendToken } from "../utlis/jwt";
 import { redis } from "../utlis/redis";
@@ -15,63 +15,95 @@ import { getAllUsersService, getUserById, updateUserRoleService } from "../servi
 import cloudinary from 'cloudinary';
 
 // register user
-interface IRegistrationBody{
-    name: string,
-    email: string,
-    password : string,
-    // avatar? : string
+interface IRegistrationBody {
+  name: string;
+  email: string;
+  password: string;
 }
 
-export const registrationUser = CatchAsyncError(async(req:Request, res: Response, next:NextFunction) => {
+export const registrationUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // console.log("Backend received:", req.body); 
-        const {name, email, password} = req.body as IRegistrationBody ;
-        const isEmailExist = await userModel.findOne({email});
-        if(isEmailExist){
-            return next(new ErrorHandler("Email already exist", 400));
-        };
+      const { name, email, password } = req.body as IRegistrationBody;
 
-        const user : IRegistrationBody= {
-            name, email, password,
-        };
-        const activationToken = createActivationToken(user);
+      // 1️⃣ Check if email exists
+      const isEmailExist = await userModel.findOne({ email });
+      if (isEmailExist) {
+        return next(new ErrorHandler("Email already exists", 400));
+      }
 
-        const activationCode = activationToken.activationCode;
-        const data = {user:{name:user.name} , activationCode};
-        const html = await ejs.renderFile(path.join(__dirname,"../mails/activation-mail.ejs"),data);
+      // 2️⃣ Create user object
+      const user: IRegistrationBody = { name, email, password };
 
-        const sendMailWithTimeout = async (options: any, timeout = 8000) => {
-            return Promise.race([
-                sendMail(options),
-                new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("Email sending timeout")), timeout)
-                ),
-            ]);
-            };
-        try {
-            await sendMail({
-                email : user.email,
-                subject: "Activate your account",
-                template: "activation-mail.ejs",
-                data,
-            })
+      // 3️⃣ Generate activation token
+      const activationToken = createActivationToken(user);
+      const data = {
+        user: { name: user.name },
+        activationCode: activationToken.activationCode,
+      };
 
-            res.status(201).json({
-                success: true,
-                message: `Please check your email ${user.email} to activate your account!`,
-                activationToken: activationToken.token,
-            })
-        } catch (error : any) {
-              console.error("❌ sendMail failed:", error); // ADD THIS
-            return next(new ErrorHandler(error.message, 400));
+      // 4️⃣ Render email template path
+      const templatePath = path.resolve(__dirname, "../mails/activation-mail.ejs");
+
+      // Check if template exists
+      try {
+        if (!(await ejs.renderFile(templatePath, data))) {
+          throw new Error("Email template rendering failed");
         }
+      } catch (templateError) {
+        console.error("❌ Template rendering failed:", templateError);
+        return next(new ErrorHandler("Email template error", 500));
+      }
 
-    } catch (error : any) {
-        console.error("Mail sending error:", error); // ✅ ADD THIS
-        return next(new ErrorHandler(error.message, 400))
-        
+      // 5️⃣ Send email with timeout
+      try {
+        const sendMailWithTimeout = async (options: any, timeout = 8000) => {
+          return Promise.race([
+            sendMail(options),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("Email sending timeout")), timeout)
+            ),
+          ]);
+        };
+
+        await sendMailWithTimeout({
+          email: user.email,
+          subject: "Activate your account",
+          template: "activation-mail.ejs",
+          data,
+        });
+        console.log("📧 Sending mail to:", user.email);
+
+
+        // 6️⃣ Respond to client
+        res.status(201).json({
+          success: true,
+          message: `Please check your email ${user.email} to activate your account!`,
+          activationToken: activationToken.token,
+        });
+      } catch (mailError: any) {
+         if (mailError.statusCode === 401) {
+                console.error("❌ Invalid or missing Mailertrap API key.");
+            } else {
+                console.error("Mailtrap error:", mailError);
+            }
+          console.warn("⚠️ sendMail failed", mailError?.body?.message || mailError);
+
+
+        // Optional: For trial accounts, still respond success so registration continues
+        res.status(201).json({
+          success: true,
+          message: `Registration successful! (Email sending failed)`,
+          activationToken: activationToken.token,
+        });
+        console.error("MailerSend error:", mailError);
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      return next(new ErrorHandler(error.message, 500));
     }
-});
+  }
+);
 
 interface IActivationToken{
     token : string,
