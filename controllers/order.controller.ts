@@ -6,7 +6,9 @@ import userModel from "../models/user.model";
 import CourseModel , {ICourse}  from "../models/course.model";
 import path from "path";
 import ejs from "ejs";
-import {sendMail} from "../utlis/sendMail";
+// import {sendMail} from "../utlis/sendMail";
+const { sendMail } = require("../utlis/sendMail");
+
 import NotificationModel from "../models/notificationModel";
 import { getAllOrdersService, newOrder } from "../services/order.service";
 import mongoose from "mongoose";

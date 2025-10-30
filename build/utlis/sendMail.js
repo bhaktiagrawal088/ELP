@@ -1,31 +1,224 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+// import nodemailer from "nodemailer";
+// import ejs from "ejs";
+// import path from "path";
+// import dotenv from "dotenv";
 Object.defineProperty(exports, "__esModule", { value: true });
-require('dotenv').config();
-const mailersend_1 = require("mailersend");
-const ejs_1 = __importDefault(require("ejs"));
-const path_1 = __importDefault(require("path"));
-const sendMail = async (options) => {
-    const { email, subject, template, data } = options;
-    // Render the email template with EJS
-    const templatePath = path_1.default.join(__dirname, "../mails", template);
-    const html = await ejs_1.default.renderFile(templatePath, data);
-    // Initialize MailerSend
-    const mailersend = new mailersend_1.MailerSend({
-        apiKey: process.env.MAILERSEND_API_KEY,
+// import { MailOptions } from "nodemailer/lib/json-transport";
+// dotenv.config();
+// interface EmailOptions {
+//   email: string;
+//   subject: string;
+//   template: string;
+//   data: { [key: string]: any };
+// }
+// const sendMail = async (options: EmailOptions): Promise<void> => {
+//   const { email, subject, template, data } = options;
+//   // SMTP transporter
+//   const transporter = nodemailer.createTransport({
+//     host: process.env.SMTP_HOST, // smtp.mailersend.com
+//     port: parseInt(process.env.SMTP_PORT || "587"),
+//     secure: false, // false for port 587 (STARTTLS)
+//     auth: {
+//       user: process.env.SMTP_MAIL,
+//       pass: process.env.SMTP_PASSWORD,
+//     },
+//   });
+//   // Path to template
+//   const templatePath = path.join(__dirname, "../mails", template);
+//   // Render HTML
+//   const html = await ejs.renderFile(templatePath, data);
+//   // Mail options
+//   const mailOptions = {
+//     from: process.env.SMTP_MAIL,
+//     to: email,
+//     subject,
+//     html,
+//   };
+//   // Send email
+//   await transporter.sendMail(mailOptions);
+//   console.log(`✅ Email sent to ${email}`);
+// };
+// export default sendMail;
+// import { MailerSend, EmailParams, Sender, Recipient } from "mailersend";
+// import ejs from "ejs";
+// import path from "path";
+// import dotenv from "dotenv";
+// dotenv.config();
+// interface EmailOptions {
+// email: string;
+// subject: string;
+// template: string;
+// data: { [key: string]: any };
+// }
+// const sendMail = async (options: EmailOptions): Promise<void> => {
+// const { email, subject, template, data } = options;
+// // Render template
+// const templatePath = path.join(__dirname, "../mails", template);
+// const html = await ejs.renderFile(templatePath, data);
+// // Initialize MailerSend with API Key
+// const mailersend = new MailerSend({
+//     apiKey: process.env.MAILERSEND_API_KEY as string,
+// });
+// const sender = new Sender(
+//     process.env.MAILERSEND_FROM_EMAIL as string,
+//     process.env.MAILERSEND_FROM_NAME || "No Name"
+// );
+// const recipients = [new Recipient(email)];
+// const emailParams = new EmailParams()
+//     .setFrom(sender)
+//     .setTo(recipients)
+//     .setSubject(subject)
+//     .setHtml(html);
+// await mailersend.email.send(emailParams);
+// console.log(`✅ Email sent to ${email}`);
+// };
+// export default sendMail;
+// import nodemailer from "nodemailer";
+// import ejs from "ejs";
+// import path from "path";
+// interface EmailOptions {
+//   email: string;
+//   subject: string;
+//   template: string;
+//   data: { [key: string]: any };
+// }
+// const sendMail = async (options: EmailOptions): Promise<void> => {
+//   const { email, subject, template, data } = options;
+//   // 1️⃣ Render EJS Template
+//   const templatePath = path.join(__dirname, "../mails", template);
+//   const html = await ejs.renderFile(templatePath, data);
+//   // 2️⃣ Create Transporter (Mailtrap SMTP)
+//   const transporter = nodemailer.createTransport({
+//     host: process.env.SMTP_HOST,
+//     port: Number(process.env.SMTP_PORT),
+//     auth: {
+//       user: process.env.SMTP_MAIL,
+//       pass: process.env.SMTP_PASSWORD,
+//     },
+//   });
+//   // 3️⃣ Send Email
+//   await transporter.sendMail({
+//     from: `"Live English With Sushil" <${process.env.FROM_EMAIL || "sushildnn78@gmail.com"}>`,
+//     to: email, // ✅ send to req.body.email
+//     subject,
+//     html,
+//   });
+//   console.log(`✅ Email sent to ${email}`);
+// };
+// export default sendMail;
+// import axios from "axios";
+// import ejs from "ejs";
+// import path from "path";
+// const MAILTRAP_TOKEN = process.env.MAILTRAP_API_TOKEN;
+// interface MailOptions {
+//   email: string;
+//   subject: string;
+//   template: string;      // filename (e.g. activation-mail.ejs)
+//   data: object;          // variables to inject in EJS
+//   from?: string;
+// }
+// export const sendMail = async (options: MailOptions) => {
+//   try {
+//     if (!MAILTRAP_TOKEN) throw new Error("Mailtrap API token missing");
+//     // 1️⃣  Render EJS template to HTML
+//     const templatePath = path.join(__dirname, "../mails", options.template);
+//     const htmlContent = await ejs.renderFile(templatePath, options.data);
+//     // 2️⃣  Send email via Mailtrap Email API
+//     const response = await axios.post(
+//       "https://send.api.mailtrap.io/api/send",
+//       {
+//         from: {
+//           email: options.from || "no-reply@yourdomain.com",
+//           name: "Learning Platform",
+//         },
+//         to: [{ email: options.email }],
+//         subject: options.subject,
+//         html: htmlContent,
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${MAILTRAP_TOKEN}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+//     console.log("✅ Mail sent successfully:", response.data);
+//     return response.data;
+//   } catch (error: any) {
+//     console.error("❌ Mail sending failed:", error.response?.data || error.message);
+//     throw error;
+//   }
+// };
+// import { MailtrapClient } from "mailtrap";
+// import ejs from "ejs";
+// import path from "path";
+// const MAILTRAP_TOKEN = process.env.MAILTRAP_API_TOKEN;
+// // Only required in ES modules
+// const __dirname = path.resolve();
+// interface MailOptions {
+//   email: string;
+//   subject: string;
+//   template: string; // e.g. activation-mail.ejs
+//   data: object;
+//   from?: string;
+// }
+// export const sendMail = async (options: MailOptions) => {
+//   if (!MAILTRAP_TOKEN) {
+//     throw new Error("❌ Mailtrap API token missing.");
+//   }
+//   // 1️⃣ Render EJS template to HTML
+//   const templatePath = path.join(__dirname, "../mails", options.template);
+//   const htmlContent = await ejs.renderFile(templatePath, options.data);
+//   // 2️⃣ Initialize Mailtrap client
+//   const client = new MailtrapClient({ token: MAILTRAP_TOKEN });
+//   // 3️⃣ Define sender and recipient
+//   const sender = {
+//     email: options.from || "hello@liveenglishwithsushil.com",
+//     name: "Live English with Sushil",
+//   };
+//   const recipients = [{ email: options.email }];
+//   // 4️⃣ Send email
+//   try {
+//     const response = await client.send({
+//       from: sender,
+//       to: recipients,
+//       subject: options.subject,
+//       html: htmlContent,
+//       category: "User Registration",
+//     });
+//     console.log("✅ Mail sent successfully:", response);
+//     return response;
+//   } catch (error: any) {
+//     console.error("❌ Mail sending failed:", error);
+//     throw error;
+//   }
+// };
+const path = require("path");
+const { MailtrapClient } = require("mailtrap");
+const ejs = require("ejs");
+const MAILTRAP_TOKEN = process.env.MAILTRAP_API_TOKEN;
+/**
+ * Send an email using Mailtrap SDK.
+ */
+async function sendMail(options) {
+    if (!MAILTRAP_TOKEN)
+        throw new Error("Mailtrap API token missing");
+    const templatePath = path.join(__dirname, "../mails", options.template);
+    const htmlContent = await ejs.renderFile(templatePath, options.data);
+    const client = new MailtrapClient({ token: MAILTRAP_TOKEN });
+    const sender = {
+        email: options.from || "hello@liveenglishwithsushil.com",
+        name: "Live English with Sushil",
+    };
+    const recipients = [{ email: options.email }];
+    const response = await client.send({
+        from: sender,
+        to: recipients,
+        subject: options.subject,
+        html: htmlContent,
     });
-    // Define sender and recipient
-    const sentFrom = new mailersend_1.Sender(process.env.MAILERSEND_FROM_EMAIL, process.env.MAILERSEND_FROM_NAME || "No Name");
-    const recipients = [new mailersend_1.Recipient(email)];
-    // Define email parameters
-    const emailParams = new mailersend_1.EmailParams()
-        .setFrom(sentFrom)
-        .setTo(recipients)
-        .setSubject(subject)
-        .setHtml(html);
-    // Send the email
-    await mailersend.email.send(emailParams);
-};
-exports.default = sendMail;
+    console.log("✅ Mail sent successfully:", response);
+    return response;
+}
+module.exports = { sendMail };

@@ -13,7 +13,8 @@ const redis_1 = require("../utlis/redis");
 const mongoose_1 = __importDefault(require("mongoose"));
 const ejs_1 = __importDefault(require("ejs"));
 const path_1 = __importDefault(require("path"));
-const sendMail_1 = __importDefault(require("../utlis/sendMail"));
+// import {sendMail} from "../utlis/sendMail";
+const { sendMail } = require("../utlis/sendMail");
 const notificationModel_1 = __importDefault(require("../models/notificationModel"));
 const axios_1 = __importDefault(require("axios"));
 // upload course
@@ -232,7 +233,7 @@ exports.addAnswer = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res, next
             };
             const html = await ejs_1.default.renderFile(path_1.default.join(__dirname, "../mails/question-reply.ejs"), data);
             try {
-                await (0, sendMail_1.default)({
+                await sendMail({
                     email: question.user.email,
                     subject: "Question-Reply",
                     template: "question-reply.ejs",

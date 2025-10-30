@@ -10,7 +10,8 @@ const user_model_1 = __importDefault(require("../models/user.model"));
 const course_model_1 = __importDefault(require("../models/course.model"));
 const path_1 = __importDefault(require("path"));
 const ejs_1 = __importDefault(require("ejs"));
-const sendMail_1 = __importDefault(require("../utlis/sendMail"));
+// import {sendMail} from "../utlis/sendMail";
+const { sendMail } = require("../utlis/sendMail");
 const notificationModel_1 = __importDefault(require("../models/notificationModel"));
 const order_service_1 = require("../services/order.service");
 // create order
@@ -47,7 +48,7 @@ exports.createOrder = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res, ne
         const html = await ejs_1.default.renderFile(path_1.default.join(__dirname, "../mails/order-confirmation.ejs"), { order: mailData });
         try {
             if (user) {
-                await (0, sendMail_1.default)({
+                await sendMail({
                     email: user.email,
                     subject: "Order-confimation",
                     template: "order-confirmation.ejs",

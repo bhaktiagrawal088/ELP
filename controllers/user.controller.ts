@@ -7,14 +7,107 @@ import { CatchAsyncError } from "../middlerware/CashAsyncErrors";
 import jwt, { JwtPayload, Secret } from 'jsonwebtoken'
 import ejs from 'ejs';
 import path from "path";
-import {sendMail} from "../utlis/sendMail"
+// import {sendMail} from "../utlis/sendMail"
+const { sendMail } = require("../utlis/sendMail");
+
 import { IUser } from "../models/user.model";
 import { accessTokenOptions, refreshTokenOptions, sendToken } from "../utlis/jwt";
 import { redis } from "../utlis/redis";
 import { getAllUsersService, getUserById, updateUserRoleService } from "../services/user.service";
 import cloudinary from 'cloudinary';
 
+
 // register user
+// interface IRegistrationBody {
+//   name: string;
+//   email: string;
+//   password: string;
+// }
+
+// export const registrationUser = CatchAsyncError(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//       const { name, email, password } = req.body as IRegistrationBody;
+
+//       // 1️⃣ Check if email exists
+//       const isEmailExist = await userModel.findOne({ email });
+//       if (isEmailExist) {
+//         return next(new ErrorHandler("Email already exists", 400));
+//       }
+
+//       // 2️⃣ Create user object
+//       const user: IRegistrationBody = { name, email, password };
+
+//       // 3️⃣ Generate activation token
+//       const activationToken = createActivationToken(user);
+//       const data = {
+//         user: { name: user.name },
+//         activationCode: activationToken.activationCode,
+//       };
+
+//       // 4️⃣ Render email template path
+//       const templatePath = path.resolve(__dirname, "../mails/activation-mail.ejs");
+
+//       // Check if template exists
+//       try {
+//         if (!(await ejs.renderFile(templatePath, data))) {
+//           throw new Error("Email template rendering failed");
+//         }
+//       } catch (templateError) {
+//         console.error("❌ Template rendering failed:", templateError);
+//         return next(new ErrorHandler("Email template error", 500));
+//       }
+
+//       // 5️⃣ Send email with timeout
+//       try {
+//         const sendMailWithTimeout = async (options: any, timeout = 8000) => {
+//           return Promise.race([
+//             sendMail(options),
+//             new Promise((_, reject) =>
+//               setTimeout(() => reject(new Error("Email sending timeout")), timeout)
+//             ),
+//           ]);
+//         };
+
+//         await sendMailWithTimeout({
+//           email: user.email,
+//           subject: "Activate your account",
+//           template: "activation-mail.ejs",
+//           data,
+//         });
+//         console.log("📧 Sending mail to:", user.email);
+
+
+//         // 6️⃣ Respond to client
+//         res.status(201).json({
+//           success: true,
+//           message: `Please check your email ${user.email} to activate your account!`,
+//           activationToken: activationToken.token,
+//         });
+//       } catch (mailError: any) {
+//          if (mailError.statusCode === 401) {
+//                 console.error("❌ Invalid or missing Mailertrap API key.");
+//             } else {
+//                 console.error("Mailtrap error:", mailError);
+//             }
+//           console.warn("⚠️ sendMail failed", mailError?.body?.message || mailError);
+
+
+//         // Optional: For trial accounts, still respond success so registration continues
+//         res.status(201).json({
+//           success: true,
+//           message: `Registration successful! (Email sending failed)`,
+//           activationToken: activationToken.token,
+//         });
+//         console.error("MailerSend error:", mailError);
+//       }
+//     } catch (error: any) {
+//       console.error("Registration error:", error);
+//       return next(new ErrorHandler(error.message, 500));
+//     }
+//   }
+// );
+
 interface IRegistrationBody {
   name: string;
   email: string;
@@ -22,88 +115,50 @@ interface IRegistrationBody {
 }
 
 export const registrationUser = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request<{}, {}, IRegistrationBody>, res: Response, next: NextFunction) => {
+    const { name, email, password } = req.body as IRegistrationBody;
+
+    const isEmailExist = await userModel.findOne({ email });
+    if (isEmailExist) {
+      return next(new ErrorHandler("Email already exists", 400));
+    }
+
+    const user: IRegistrationBody = { name, email, password };
+
+    // Generate activation token
+    const activationToken = createActivationToken(user);
+    const data = {
+      user: { name: user.name },
+      activationCode: activationToken.activationCode,
+    };
+
     try {
-      const { name, email, password } = req.body as IRegistrationBody;
+      await sendMail({
+        email: user.email, // send mail to the user's email
+        subject: "Activate your Live English account",
+        template: "activation-mail.ejs",
+        data,
+      });
 
-      // 1️⃣ Check if email exists
-      const isEmailExist = await userModel.findOne({ email });
-      if (isEmailExist) {
-        return next(new ErrorHandler("Email already exists", 400));
-      }
+      console.log("📧 Activation email sent to:", user.email);
 
-      // 2️⃣ Create user object
-      const user: IRegistrationBody = { name, email, password };
+      return res.status(201).json({
+        success: true,
+        message: `Please check your email (${user.email}) to activate your account!`,
+        activationToken: activationToken.token,
+      });
+    } catch (mailError) {
+      console.error("⚠️ Mail sending failed:", mailError);
 
-      // 3️⃣ Generate activation token
-      const activationToken = createActivationToken(user);
-      const data = {
-        user: { name: user.name },
-        activationCode: activationToken.activationCode,
-      };
-
-      // 4️⃣ Render email template path
-      const templatePath = path.resolve(__dirname, "../mails/activation-mail.ejs");
-
-      // Check if template exists
-      try {
-        if (!(await ejs.renderFile(templatePath, data))) {
-          throw new Error("Email template rendering failed");
-        }
-      } catch (templateError) {
-        console.error("❌ Template rendering failed:", templateError);
-        return next(new ErrorHandler("Email template error", 500));
-      }
-
-      // 5️⃣ Send email with timeout
-      try {
-        const sendMailWithTimeout = async (options: any, timeout = 8000) => {
-          return Promise.race([
-            sendMail(options),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error("Email sending timeout")), timeout)
-            ),
-          ]);
-        };
-
-        await sendMailWithTimeout({
-          email: user.email,
-          subject: "Activate your account",
-          template: "activation-mail.ejs",
-          data,
-        });
-        console.log("📧 Sending mail to:", user.email);
-
-
-        // 6️⃣ Respond to client
-        res.status(201).json({
-          success: true,
-          message: `Please check your email ${user.email} to activate your account!`,
-          activationToken: activationToken.token,
-        });
-      } catch (mailError: any) {
-         if (mailError.statusCode === 401) {
-                console.error("❌ Invalid or missing Mailertrap API key.");
-            } else {
-                console.error("Mailtrap error:", mailError);
-            }
-          console.warn("⚠️ sendMail failed", mailError?.body?.message || mailError);
-
-
-        // Optional: For trial accounts, still respond success so registration continues
-        res.status(201).json({
-          success: true,
-          message: `Registration successful! (Email sending failed)`,
-          activationToken: activationToken.token,
-        });
-        console.error("MailerSend error:", mailError);
-      }
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      return next(new ErrorHandler(error.message, 500));
+      return res.status(201).json({
+        success: true,
+        message: `User registered, but email failed to send.`,
+        activationToken: activationToken.token,
+      });
     }
   }
 );
+
 
 interface IActivationToken{
     token : string,

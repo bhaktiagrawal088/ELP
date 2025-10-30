@@ -9,56 +9,46 @@ const user_model_1 = __importDefault(require("../models/user.model"));
 const ErrorHandler_1 = __importDefault(require("../utlis/ErrorHandler"));
 const CashAsyncErrors_1 = require("../middlerware/CashAsyncErrors");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const ejs_1 = __importDefault(require("ejs"));
-const path_1 = __importDefault(require("path"));
-const sendMail_1 = __importDefault(require("../utlis/sendMail"));
+// import {sendMail} from "../utlis/sendMail"
+const { sendMail } = require("../utlis/sendMail");
 const jwt_1 = require("../utlis/jwt");
 const redis_1 = require("../utlis/redis");
 const user_service_1 = require("../services/user.service");
 const cloudinary_1 = __importDefault(require("cloudinary"));
 exports.registrationUser = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res, next) => {
-    try {
-        // console.log("Backend received:", req.body); 
-        const { name, email, password } = req.body;
-        const isEmailExist = await user_model_1.default.findOne({ email });
-        if (isEmailExist) {
-            return next(new ErrorHandler_1.default("Email already exist", 400));
-        }
-        ;
-        const user = {
-            name, email, password,
-        };
-        const activationToken = (0, exports.createActivationToken)(user);
-        const activationCode = activationToken.activationCode;
-        const data = { user: { name: user.name }, activationCode };
-        const html = await ejs_1.default.renderFile(path_1.default.join(__dirname, "../mails/activation-mail.ejs"), data);
-        const sendMailWithTimeout = async (options, timeout = 8000) => {
-            return Promise.race([
-                (0, sendMail_1.default)(options),
-                new Promise((_, reject) => setTimeout(() => reject(new Error("Email sending timeout")), timeout)),
-            ]);
-        };
-        try {
-            await (0, sendMail_1.default)({
-                email: user.email,
-                subject: "Activate your account",
-                template: "activation-mail.ejs",
-                data,
-            });
-            res.status(201).json({
-                success: true,
-                message: `Please check your email ${user.email} to activate your account!`,
-                activationToken: activationToken.token,
-            });
-        }
-        catch (error) {
-            console.error("❌ sendMail failed:", error); // ADD THIS
-            return next(new ErrorHandler_1.default(error.message, 400));
-        }
+    const { name, email, password } = req.body;
+    const isEmailExist = await user_model_1.default.findOne({ email });
+    if (isEmailExist) {
+        return next(new ErrorHandler_1.default("Email already exists", 400));
     }
-    catch (error) {
-        console.error("Mail sending error:", error); // ✅ ADD THIS
-        return next(new ErrorHandler_1.default(error.message, 400));
+    const user = { name, email, password };
+    // Generate activation token
+    const activationToken = (0, exports.createActivationToken)(user);
+    const data = {
+        user: { name: user.name },
+        activationCode: activationToken.activationCode,
+    };
+    try {
+        await sendMail({
+            email: user.email, // send mail to the user's email
+            subject: "Activate your Live English account",
+            template: "activation-mail.ejs",
+            data,
+        });
+        console.log("📧 Activation email sent to:", user.email);
+        return res.status(201).json({
+            success: true,
+            message: `Please check your email (${user.email}) to activate your account!`,
+            activationToken: activationToken.token,
+        });
+    }
+    catch (mailError) {
+        console.error("⚠️ Mail sending failed:", mailError);
+        return res.status(201).json({
+            success: true,
+            message: `User registered, but email failed to send.`,
+            activationToken: activationToken.token,
+        });
     }
 });
 const createActivationToken = (user) => {

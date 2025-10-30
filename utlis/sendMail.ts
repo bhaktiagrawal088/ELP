@@ -3,6 +3,8 @@
     // import path from "path";
     // import dotenv from "dotenv";
 
+// import { MailOptions } from "nodemailer/lib/json-transport";
+
     // dotenv.config();
 
     // interface EmailOptions {
@@ -136,52 +138,157 @@
 
 // export default sendMail;
 
-import axios from "axios";
-import ejs from "ejs";
-import path from "path";
+// import axios from "axios";
+// import ejs from "ejs";
+// import path from "path";
+
+// const MAILTRAP_TOKEN = process.env.MAILTRAP_API_TOKEN;
+
+// interface MailOptions {
+//   email: string;
+//   subject: string;
+//   template: string;      // filename (e.g. activation-mail.ejs)
+//   data: object;          // variables to inject in EJS
+//   from?: string;
+// }
+
+// export const sendMail = async (options: MailOptions) => {
+//   try {
+//     if (!MAILTRAP_TOKEN) throw new Error("Mailtrap API token missing");
+
+//     // 1️⃣  Render EJS template to HTML
+//     const templatePath = path.join(__dirname, "../mails", options.template);
+//     const htmlContent = await ejs.renderFile(templatePath, options.data);
+
+//     // 2️⃣  Send email via Mailtrap Email API
+//     const response = await axios.post(
+//       "https://send.api.mailtrap.io/api/send",
+//       {
+//         from: {
+//           email: options.from || "no-reply@yourdomain.com",
+//           name: "Learning Platform",
+//         },
+//         to: [{ email: options.email }],
+//         subject: options.subject,
+//         html: htmlContent,
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${MAILTRAP_TOKEN}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+
+//     console.log("✅ Mail sent successfully:", response.data);
+//     return response.data;
+//   } catch (error: any) {
+//     console.error("❌ Mail sending failed:", error.response?.data || error.message);
+//     throw error;
+//   }
+// };
+
+// import { MailtrapClient } from "mailtrap";
+// import ejs from "ejs";
+// import path from "path";
+
+
+// const MAILTRAP_TOKEN = process.env.MAILTRAP_API_TOKEN;
+
+// // Only required in ES modules
+// const __dirname = path.resolve();
+
+// interface MailOptions {
+//   email: string;
+//   subject: string;
+//   template: string; // e.g. activation-mail.ejs
+//   data: object;
+//   from?: string;
+// }
+
+// export const sendMail = async (options: MailOptions) => {
+//   if (!MAILTRAP_TOKEN) {
+//     throw new Error("❌ Mailtrap API token missing.");
+//   }
+
+//   // 1️⃣ Render EJS template to HTML
+//   const templatePath = path.join(__dirname, "../mails", options.template);
+//   const htmlContent = await ejs.renderFile(templatePath, options.data);
+
+//   // 2️⃣ Initialize Mailtrap client
+//   const client = new MailtrapClient({ token: MAILTRAP_TOKEN });
+
+//   // 3️⃣ Define sender and recipient
+//   const sender = {
+//     email: options.from || "hello@liveenglishwithsushil.com",
+//     name: "Live English with Sushil",
+//   };
+
+//   const recipients = [{ email: options.email }];
+
+//   // 4️⃣ Send email
+//   try {
+//     const response = await client.send({
+//       from: sender,
+//       to: recipients,
+//       subject: options.subject,
+//       html: htmlContent,
+//       category: "User Registration",
+//     });
+
+//     console.log("✅ Mail sent successfully:", response);
+//     return response;
+//   } catch (error: any) {
+//     console.error("❌ Mail sending failed:", error);
+//     throw error;
+//   }
+// };
+
+const path = require("path");
+const { MailtrapClient } = require("mailtrap");
+import ejs = require("ejs");
 
 const MAILTRAP_TOKEN = process.env.MAILTRAP_API_TOKEN;
 
+/**
+ * Define a proper type for mail options.
+ */
 interface MailOptions {
-  email: string;
-  subject: string;
-  template: string;      // filename (e.g. activation-mail.ejs)
-  data: object;          // variables to inject in EJS
-  from?: string;
+  email: string;        // recipient email
+  subject: string;      // email subject
+  template: string;     // e.g. "activation-mail.ejs"
+  data: object;         // variables to inject in EJS
+  from?: string;        // optional sender address
 }
 
-export const sendMail = async (options: MailOptions) => {
-  try {
-    if (!MAILTRAP_TOKEN) throw new Error("Mailtrap API token missing");
+/**
+ * Send an email using Mailtrap SDK.
+ */
+async function sendMail(options: MailOptions) {
+  if (!MAILTRAP_TOKEN) throw new Error("Mailtrap API token missing");
 
-    // 1️⃣  Render EJS template to HTML
-    const templatePath = path.join(__dirname, "../mails", options.template);
-    const htmlContent = await ejs.renderFile(templatePath, options.data);
+  const templatePath = path.join(__dirname, "../mails", options.template);
+  const htmlContent = await ejs.renderFile(templatePath, options.data);
 
-    // 2️⃣  Send email via Mailtrap Email API
-    const response = await axios.post(
-      "https://send.api.mailtrap.io/api/send",
-      {
-        from: {
-          email: options.from || "no-reply@yourdomain.com",
-          name: "Learning Platform",
-        },
-        to: [{ email: options.email }],
-        subject: options.subject,
-        html: htmlContent,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${MAILTRAP_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+  const client = new MailtrapClient({ token: MAILTRAP_TOKEN });
 
-    console.log("✅ Mail sent successfully:", response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error("❌ Mail sending failed:", error.response?.data || error.message);
-    throw error;
-  }
-};
+  const sender = {
+    email: options.from || "hello@liveenglishwithsushil.com",
+    name: "Live English with Sushil",
+  };
+
+  const recipients = [{ email: options.email }];
+
+  const response = await client.send({
+    from: sender,
+    to: recipients,
+    subject: options.subject,
+    html: htmlContent,
+  });
+
+  console.log("✅ Mail sent successfully:", response);
+  return response;
+}
+
+module.exports = { sendMail };
+
