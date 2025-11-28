@@ -128,6 +128,7 @@ app.use(limiter);
 app.use("/api/v1", userRouter, courseRouter);
 app.use("/api/v1", orderRouter, notificationRoute);
 app.use("/api/v1", analayticsRouter, layoutRouter);
+app.use("/api/v1", orderRouter);
 
 app.get("/test", (req: Request, res: Response) => {
     res.status(200).json({
