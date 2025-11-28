@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema , Types} from "mongoose";
 import { IUser } from "./user.model";
 import { timeStamp } from "console";
 
@@ -21,6 +21,7 @@ interface ILink extends Document {
 }
 
 interface ICourseData extends Document {
+  _id: Types.ObjectId; // ✅ explicit _id typing
   title: string;
   description: string;
   videoUrl: string;

@@ -1,19 +1,29 @@
 "use strict";
+// import { Request, Response, NextFunction } from "express";
+// import { CatchAsyncError } from "../middlerware/CashAsyncErrors";
+// import ErrorHandler from "../utlis/ErrorHandler";
+// import OrderModel, {IOrder} from "../models/orderModel";
+// import userModel from "../models/user.model";
+// import CourseModel , {ICourse}  from "../models/course.model";
+// import path from "path";
+// import ejs from "ejs";
+// // import {sendMail} from "../utlis/sendMail";
+// const { sendMail } = require("../utlis/sendMail");
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendStripePublishableKey = exports.getAllOrders = exports.createOrder = void 0;
+exports.getAllOrders = exports.createOrder = void 0;
 const CashAsyncErrors_1 = require("../middlerware/CashAsyncErrors");
 const ErrorHandler_1 = __importDefault(require("../utlis/ErrorHandler"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 const course_model_1 = __importDefault(require("../models/course.model"));
 const path_1 = __importDefault(require("path"));
 const ejs_1 = __importDefault(require("ejs"));
-// import {sendMail} from "../utlis/sendMail";
 const { sendMail } = require("../utlis/sendMail");
 const notificationModel_1 = __importDefault(require("../models/notificationModel"));
 const order_service_1 = require("../services/order.service");
+const redis_1 = require("../utlis/redis");
 // create order
 exports.createOrder = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res, next) => {
     try {
@@ -22,7 +32,6 @@ exports.createOrder = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res, ne
         if (!user) {
             return next(new ErrorHandler_1.default("User not found", 404));
         }
-        // const courseExistInUser =  user?.courses.some((course:any) => course._id.toString() === courseId);
         const courseExistInUser = user?.courses.some((c) => c.courseId === courseId);
         if (courseExistInUser) {
             return next(new ErrorHandler_1.default("You have already purchased this course", 400));
@@ -38,45 +47,46 @@ exports.createOrder = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res, ne
         };
         const mailData = {
             order: {
-                // _id : course._id.slice(0,6),
-                _id: course._id.toString().slice(0, 6), // Assert the type to ObjectId and then call toString()
+                _id: course._id.toString().slice(0, 6),
                 name: course.name,
                 price: course.price,
                 date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-            }
+            },
         };
+        // Render EJS to HTML
         const html = await ejs_1.default.renderFile(path_1.default.join(__dirname, "../mails/order-confirmation.ejs"), { order: mailData });
         try {
             if (user) {
                 await sendMail({
                     email: user.email,
-                    subject: "Order-confimation",
-                    template: "order-confirmation.ejs",
-                    data: mailData,
+                    subject: "Order Confirmation",
+                    html: html, // Direct HTML, no template
                 });
+                console.log("Email sent for direct order to:", user.email);
             }
         }
         catch (error) {
-            return next(new ErrorHandler_1.default(error.message, 500));
+            console.error("Email send failed:", error.message); // Non-blocking
         }
-        // user?.courses.push(course?._id);
-        user?.courses.push({ courseId: (course?._id).toString() });
-        await user.save(); // Save changes to the database
-        const notification = await notificationModel_1.default.create({
-            user: user?._id,
+        // Add course to user
+        user.courses.push({ courseId: course._id.toString() });
+        await redis_1.redis.set(req.user?.id, JSON.stringify(user));
+        await user.save();
+        // Create notification
+        await notificationModel_1.default.create({
+            user: user._id,
             title: "New Order",
-            message: `You have a new order ${course?.name}`
+            message: `You have a new order ${course.name}`,
         });
-        // course.purchased ? course.purchased += 1 : course.purchased;
+        // Increment purchased
         await course_model_1.default.findByIdAndUpdate(courseId, { $inc: { purchased: 1 } }, { new: true });
-        await course.save();
         (0, order_service_1.newOrder)(data, res, next);
     }
     catch (error) {
         return next(new ErrorHandler_1.default(error.message, 500));
     }
 });
-// get all order -- only for admin
+// get all orders -- only for admin
 exports.getAllOrders = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res, next) => {
     try {
         (0, order_service_1.getAllOrdersService)(res);
@@ -84,10 +94,4 @@ exports.getAllOrders = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res, n
     catch (error) {
         return next(new ErrorHandler_1.default(error.message, 500));
     }
-});
-// sent stripe publishie key
-exports.sendStripePublishableKey = (0, CashAsyncErrors_1.CatchAsyncError)(async (req, res) => {
-    res.status(200).json({
-        publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-    });
 });

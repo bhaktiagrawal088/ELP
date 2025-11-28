@@ -185,7 +185,7 @@
 
 import axios from "axios";
 import crypto from "crypto";  // For optional checksum verification
-import { Request, Response } from "express";
+import {Request, Response } from "express";
 import OrderModel from "../models/orderModel";
 import userModel from "../models/user.model";
 import CourseModel, { ICourse } from "../models/course.model";
@@ -194,10 +194,28 @@ import ejs from "ejs";
 const { sendMail } = require("../utlis/sendMail");
 import NotificationModel from "../models/notificationModel";
 import mongoose from "mongoose";
+import { RequestHandler } from "express";
+
 
 // Cache token
 let accessToken: string | null = null;
 let tokenExpiry: number = 0;
+
+
+export type AuthRequestHandler<T = any> = RequestHandler<{}, any, T> & {
+  user?: AuthUser;
+};
+
+
+export interface AuthUser {
+  _id: mongoose.Types.ObjectId | string;
+  email?: string;
+  name?: string;
+}
+export type AuthRequest<T = any> = Request<{}, {}, T> & {
+  user?: AuthUser;
+};
+
 
 // Fetch/refresh OAuth token (V2: Form-encoded body)
 const getAccessToken = async (): Promise<string> => {
@@ -230,7 +248,7 @@ const getAccessToken = async (): Promise<string> => {
       accessToken = tokenResponse.data.access_token;
       tokenExpiry = Date.now() + (tokenResponse.data.expires_in * 1000) - 60000;
       console.log("Token fetched successfully (expires:", new Date(tokenExpiry).toISOString(), ")");
-      return accessToken;
+      return accessToken ?? "";
     } else {
       throw new Error("Invalid token response");
     }
@@ -241,7 +259,7 @@ const getAccessToken = async (): Promise<string> => {
 };
 
 // 1. INITIATE PAYMENT (V2)
-export const initiatePayment = async (req: Request, res: Response) => {
+export const initiatePayment :AuthRequestHandler = async (req, res) => {
   try {
     console.log("REQ BODY:", req.body);
     console.log("USER:", req.user);
@@ -271,7 +289,8 @@ export const initiatePayment = async (req: Request, res: Response) => {
       expireAfter: 1200,
       metaInfo: {
         udf1: courseId,
-        udf2: req.user!._id.toString(),
+        // udf2: req.user!._id.toString() ,
+        udf2: req.user!._id ? req.user!._id.toString() : "",
       },
       paymentFlow: {
         type: "PG_CHECKOUT",
@@ -321,9 +340,9 @@ export const initiatePayment = async (req: Request, res: Response) => {
 };
 
 // 2. PHONEPE CALLBACK HANDLER (V2 Webhook)
-export const paymentCallback = async (req: Request, res: Response) => {
+export const paymentCallback : RequestHandler = async (req, res) => {
   try {
-    const base64Payload = req.body.response;
+    const base64Payload = req.body?.response;
     if (!base64Payload) return res.status(400).send("Missing response payload");
 
     const decodedPayload = JSON.parse(Buffer.from(base64Payload, "base64").toString("utf-8"));
@@ -354,14 +373,19 @@ export const paymentCallback = async (req: Request, res: Response) => {
         return res.status(200).send("OK");
       }
 
-      const course: ICourse | null = await CourseModel.findById(courseId);
+      // const course: ICourse | null = await CourseModel.findById(courseId);
+      const course = await CourseModel.findById(courseId) as ICourse | null;
+
       if (!course) {
         console.error("Course not found in callback");
         return res.status(404).send("Course not found");
       }
 
       // Add course
-      user.courses.push({ courseId: course._id.toString() });
+      // user.courses.push({ courseId: course._id.toString() });
+      // user.courses.push({ courseId: course._id.toString() });
+      user.courses.push({ courseId: (course._id as mongoose.Types.ObjectId).toString() });
+
       await user.save();
       console.log("Course added to user:", userId);
 
